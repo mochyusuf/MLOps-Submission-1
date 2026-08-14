@@ -7,6 +7,7 @@ from tfx.components.trainer.fn_args_utils import FnArgs
 import json
 
 LABEL_KEY = "Sentiment"
+LABEL_DIMENSION = 5
 FEATURE_KEY = "OriginalTweet"
 VOCAB_SIZE = 10000
 SEQUENCE_LENGTH = 100
@@ -31,7 +32,7 @@ def input_fn(file_pattern, tf_transform_output, num_epochs, batch_size=BATCH_SIZ
         features=transform_feature_spec,
         reader=gzip_reader_fn,
         num_epochs=num_epochs,
-        label_key=transformed_name(key=LABEL_KEY),
+        label_key=transformed_name(LABEL_KEY),
     )
     return dataset
 
@@ -56,14 +57,13 @@ def model_builder(hp):
     x = layers.Dense(hp['unit_1'], activation="relu")(x)
     x = layers.Dense(hp['unit_2'], activation="relu")(x)
     x = layers.Dense(hp['unit_3'], activation="relu")(x)
-    outputs = layers.Dense(1, activation="sigmoid")(x)
+
+    outputs = tf.keras.layers.Dense(LABEL_DIMENSION, activation="softmax")(x)
     
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
     model.compile(
-        loss="sparse_categorical_crossentropy",
-        optimizer=tf.keras.optimizers.Adam(
-            learning_rate=hp['learning_rate']
-        ),
+        loss="categorical_crossentropy",
+        optimizer='adam',
         metrics=["accuracy"],
     )
 
@@ -92,11 +92,11 @@ def run_fn(fn_args: FnArgs) -> None:
         log_dir=log_dir, update_freq="batch"
     )
     early_stopping = tf.keras.callbacks.EarlyStopping(
-        monitor="val_binary_accuracy", mode="max", verbose=1, patience=10
+        monitor="val_accuracy", mode="max", verbose=1, patience=10
     )
     model_checkpoint = tf.keras.callbacks.ModelCheckpoint(
         fn_args.serving_model_dir,
-        monitor="val_binary_accuracy",
+        monitor="val_accuracy",
         mode="max",
         verbose=1,
         save_best_only=True,
