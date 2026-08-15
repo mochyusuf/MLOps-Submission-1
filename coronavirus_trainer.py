@@ -85,6 +85,22 @@ def _get_serve_tf_examples_fn(model, tf_transform_output):
     return serve_tf_examples_fn
 
 
+def _get_transform_features_signature(model, tf_transform_output):
+    model.tft_layer_eval = tf_transform_output.transform_features_layer()
+
+    @tf.function(
+        input_signature=[
+            tf.TensorSpec(shape=[None], dtype=tf.string, name="examples"),
+        ]
+    )
+    def transform_features_fn(serialized_tf_example):
+        raw_feature_spec = tf_transform_output.raw_feature_spec()
+        raw_features = tf.io.parse_example(serialized_tf_example, raw_feature_spec)
+        transformed_features = model.tft_layer_eval(raw_features)
+        return transformed_features
+
+    return transform_features_fn
+
 def run_fn(fn_args: FnArgs) -> None:
     log_dir = os.path.join(os.path.dirname(fn_args.serving_model_dir), "logs")
 
@@ -134,7 +150,10 @@ def run_fn(fn_args: FnArgs) -> None:
     signatures = {
         "serving_default": _get_serve_tf_examples_fn(model, tf_transform_output).get_concrete_function(
             tf.TensorSpec(shape=[None], dtype=tf.string, name="examples")
-        )
+        ),
+        "transform_features": _get_transform_features_signature(
+            model, tf_transform_output
+        ),
     }
 
     model.save(fn_args.serving_model_dir, save_format="tf", signatures=signatures)

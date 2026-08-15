@@ -17,6 +17,7 @@ OUTPUT_SEQUENCE_LENGTH = 100
 EMBEDDING_DIM = 16
 NUM_EPOCHS = 5
 BATCH_SIZE = 64
+MAX_TRIAL = 10
 
 
 TunerFnResult = NamedTuple("TunerFnResult", [
@@ -80,7 +81,7 @@ def tuner_fn(fn_args: FnArgs) -> TunerFnResult:
     tuner: Any = kt.RandomSearch(
         hypermodel=lambda hp: model_builder(hp, vectorizer_layer),
         objective="val_accuracy",
-        max_trials=20,
+        max_trials=MAX_TRIAL,
         directory=fn_args.working_dir,
         project_name="coronavirus_sentiment_random_search",
     )
