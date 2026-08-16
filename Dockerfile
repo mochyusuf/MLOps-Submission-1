@@ -1,4 +1,4 @@
 FROM tensorflow/serving:latest
 
 COPY ./serving_model_dir /models
-ENV MODEL_NAME=coronavirustweet-prediction-model
+ENV MODEL_NAME=coronavirus-prediction-model
