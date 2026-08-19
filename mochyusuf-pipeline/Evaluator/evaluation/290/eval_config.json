@@ -1,0 +1,57 @@
+{
+  "evalConfig": {
+    "modelSpecs": [
+      {
+        "signatureName": "serving_default",
+        "labelKey": "Sentiment_xf",
+        "preprocessingFunctionNames": [
+          "transform_features"
+        ]
+      }
+    ],
+    "slicingSpecs": [
+      {}
+    ],
+    "metricsSpecs": [
+      {
+        "metrics": [
+          {
+            "className": "ExampleCount"
+          },
+          {
+            "className": "AUC"
+          },
+          {
+            "className": "FalsePositives"
+          },
+          {
+            "className": "TruePositives"
+          },
+          {
+            "className": "FalseNegatives"
+          },
+          {
+            "className": "TrueNegatives"
+          },
+          {
+            "className": "CategoricalAccuracy",
+            "threshold": {
+              "valueThreshold": {
+                "lowerBound": 0.5
+              }
+            }
+          }
+        ],
+        "modelNames": [
+          ""
+        ]
+      }
+    ]
+  },
+  "version": "0.42.0",
+  "dataLocation": "<user provided PCollection>",
+  "fileFormat": "<unknown>",
+  "modelLocations": {
+    "": "mochyusuf-pipeline\\Trainer\\model\\288\\Format-Serving"
+  }
+}
